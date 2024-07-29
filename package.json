@@ -1,0 +1,29 @@
+{
+  "name": "pantry",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^5.16.5",
+    "@prisma/client": "^5.17.0",
+    "firebase": "^9.23.0",
+    "next": "14.2.5",
+    "next-auth": "^4.24.7",
+    "prisma": "^5.17.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "reactfire": "^4.2.3"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5"
+  }
+}
