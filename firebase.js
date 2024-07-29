@@ -10,6 +10,7 @@ const firebaseConfig = {
   storageBucket: "pantry-app-95fce.appspot.com",
   messagingSenderId: "838999789452",
   appId: "1:838999789452:web:a589a62d09e784460590a9"
+  
 };
 // Initialize Firebase only if it's not already initialized
 const app = initializeApp(firebaseConfig);
