@@ -78,7 +78,6 @@ const LandingPage = () => {
     <footer className="text-center p-8 bg-green-800 text-white">
       <p>Made with ❤️ by Dawn Saju</p>
       <p>As part of Headstarter SWE Fellowship</p>
-      <p>Powered by NextJS & Firebase</p>
     </footer>
   </div>
   );
