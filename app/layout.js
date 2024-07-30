@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
           <body className={inter.className} style={{ overflowX: 'hidden' }}>
             {children}
           </body>
-          <GoogleAnalytics gaId="G-XYZ" />
+          <GoogleAnalytics gaId="G-ZVHVLJMJWF" />
         </html>
       </SessionProvider>
     </FirebaseAppProvider>
