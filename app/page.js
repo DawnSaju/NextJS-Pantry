@@ -2,7 +2,7 @@
 
 import { useSession, signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { Box, Typography, Modal, TextField } from "@mui/material";
 
 export default function Home() {
