@@ -5,6 +5,7 @@ import "./globals.css";
 import { firebaseConfig } from "../firebase";
 import { FirebaseAppProvider } from "reactfire";
 import { SessionProvider } from "next-auth/react";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,6 +14,9 @@ export default function RootLayout({ children }) {
     <FirebaseAppProvider firebaseConfig={firebaseConfig}>
       <SessionProvider>
         <html lang="en">
+          <Head>
+            <title>Pantry App</title>
+          </Head>
           <body className={inter.className} style={{ overflowX: 'hidden' }}>
             {children}
           </body>
