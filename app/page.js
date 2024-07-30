@@ -66,8 +66,8 @@ const LandingPage = () => {
 
       <div className="mt-20 flex justify-center items-center">
         <Image
-          src="/pantry-app-screenshot.png"
-          alt="Pantry App Screenshot"
+          src="/thumbnail.jpg"
+          alt="Image"
           width={800}
           height={400}
           className="rounded-lg shadow-xl"
