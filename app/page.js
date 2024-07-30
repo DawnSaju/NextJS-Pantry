@@ -8,7 +8,6 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import './global.css';
 
 const LandingPage = () => {
-    
   const router = useRouter();
   const { data: session, status } = useSession();
 
