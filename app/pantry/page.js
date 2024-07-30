@@ -639,9 +639,9 @@ export default function Home() {;
     }
   }, [status, session]);
   return (
-    <div className="flex">
+    <div className="flex-1">
       <Sidebar />
-      <main className="flex-1 bg-gradient-to-b from-green-100 to-green-200 p-8">
+      <main className="flex justify-center items-center h-screen bg-gradient-to-b from-green-100 to-green-200 p-8">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <p className="text-lg mb-6 text-gray-600">Manage your pantry items with ease. Add, update, remove, and search your pantry items all in one place.</p>
