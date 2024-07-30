@@ -8,12 +8,12 @@
 "use client";
 
 import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
-import { firestore } from "../firebase"; 
-import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { firestore } from "../firebase";
+import { collection, query, getDocs, where, doc, setDoc, deleteDoc, getDoc, addDoc,updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { update } from "firebase/database";
 import { useSession, signIn } from "next-auth/react";
-
+import { getUserSession } from '../../lib/session'
 
 export default function Home() {;
   const [pantry, setPantry] = useState([]);
@@ -29,8 +29,11 @@ export default function Home() {;
   const [expiryDate, setExpiryDate] = useState("");
   const [NewItem, setNewItem] = useState("");
   const [searchParam, setSearchParam] = useState("");
+  const [param, setParam] = useState("");
   const [user, setUser] = useState(null);
-  
+  const [loading, setLoading] = useState(true);
+  const [pantryItems, setPantryItems] = useState([]);
+
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -56,72 +59,170 @@ export default function Home() {;
     p: 4,
     gap: 1,
   };
+
+  const search = (param) => {
+    if (!param) {
+      setSearchParam("");
+    } else {
+      setSearchParam(param);
+    }
+  }
+
+  const addItem = async (itemName, itemQuantity, expiryDate) => {
+    if (status === "authenticated") {
+      const userId = session.user.id;
   
-  const addItem = async (item, expiryDate) => {
-    if (!item || !expiryDate) {
-      console.error("Item name and expiry date are required.");
+      if (!itemName || !itemQuantity || !expiryDate) {
+        console.error("Item name, quantity, and expiry date are required");
+        return;
+      }
+  
+      try {
+        const itemData = {
+          name: itemName,
+          quantity: itemQuantity,
+          expiryDate: expiryDate,
+        };
+  
+        const pantryCollectionRef = collection(firestore, `users/${userId}/pantry`);
+        const q = query(pantryCollectionRef, where("name", "==", itemName));
+        const querySnapshot = await getDocs(q);
+  
+        if (!querySnapshot.empty) {
+          querySnapshot.forEach(async (docSnap) => {
+            const docRef = doc(firestore, `users/${userId}/pantry/${docSnap.id}`);
+            const existingData = docSnap.data();
+  
+            await setDoc(docRef, {
+              quantity: existingData.quantity + parseInt(itemQuantity, 10),
+              expiryDate: expiryDate
+            }, { merge: true });
+
+            updatePantry();
+          });
+        } else {
+          await addDoc(pantryCollectionRef, itemData);  
+          updatePantry();
+        }
+      } catch (error) {
+        console.error("Error adding/updating item: ", error);
+      }
+    } else {
+      console.error("User not authenticated");
+    }
+  };
+
+  const removeItem = async (itemName) => {
+    if (!itemName) {
+      console.error("Item name is required.");
       return;
     }
-    const docRef = doc(collection(firestore, "pantry"), item);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const { count } = docSnap.data();
-      await setDoc(docRef, { count: count + 1 }, { merge: true });
-    } else {
-      await setDoc(docRef, { count: 1, expiryDate });
-    }
-    await updatePantry();
-    setNewItem("");
-    setExpiryDate("");
-  };
-
-  const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, "pantry"), item);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const { count } = docSnap.data();
-      if (count <= 1) {
-        await deleteDoc(docRef);
+  
+    try {
+      const userId = session.user.id; 
+      const pantryCollectionRef = collection(firestore, `users/${userId}/pantry`);
+      const q = query(pantryCollectionRef, where("name", "==", itemName));
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (docSnap) => {
+          const docRef = doc(firestore, `users/${userId}/pantry/${docSnap.id}`);
+          const data = docSnap.data();
+  
+          if (!data) {
+            console.error(`No data found for item '${itemName}'.`);
+            return;
+          }
+  
+          const { quantity } = data;
+  
+          if (quantity <= 1) {
+            await deleteDoc(docRef);
+          } else {
+            await updateDoc(docRef, { quantity: quantity - 1 });
+            console.log(`Item '${itemName}' quantity updated.`);
+          }
+          await updatePantry();
+        });
       } else {
-        await setDoc(docRef, { count: count - 1 }, { merge: true });
+        console.log("Item does not exist.");
       }
-      await updatePantry();
+    } catch (error) {
+      console.error("Error removing item:", error);
     }
   };
-
+  
+  
   const updateItem = async (item, quantity) => {
     if (!item || !quantity) {
       console.error("Item name and quantity are required.");
       return;
     }
 
-    const docRef = doc(collection(firestore, "pantry"), item);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      await setDoc(docRef, { count: quantity });
+    try {
+      const userId = session.user.id;
+      const pantryCollectionRef = collection(firestore, `users/${userId}/pantry`);
+      const q = query(pantryCollectionRef, where("name", "==", item));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (docSnap) => {
+          const docRef = doc(firestore, `users/${userId}/pantry/${docSnap.id}`);
+          await setDoc(docRef, { quantity: parseInt(quantity, 10) }, { merge: true });
+          updatePantry();
+        });
+      } else {
+        console.log("Item does not exist.");
+      }
+    } catch (error) {
+      console.error("Error updating item:", error);
     }
-    await updatePantry();
-    setNewItem("");
-    setQuantity("");
   };
 
   const updatePantry = async () => {
-    const snapshot = query(collection(firestore, "pantry"));
-    const docs = await getDocs(snapshot);
-    const pantryList = [];
-    docs.forEach((doc) => {
-      pantryList.push({"name": doc.id, ...doc.data()});
-    });
-    setPantry(pantryList);
-  }
+    if (status === "authenticated") {
+      const userId = session.user.id;
+      const userDocRef = doc(firestore, `users/${userId}`);
+      const pantryRef = collection(userDocRef, 'pantry');
+      const pantrySnapshot = await getDocs(pantryRef);
+      const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPantryItems(items);
+    }
+  };
 
-  const filteredPantry = pantry.filter(({ name }) =>
+  const filteredPantry = pantryItems.filter(({ name }) =>
     name.toLowerCase().includes(searchParam.toLowerCase())
   );
 
   useEffect(() => {
-    updatePantry();
-  }, []);
+    if (status === "authenticated" && session) {
+      const fetchPantryItems = async () => {
+        try {
+          const userId = session.user.id;
+          const userDocRef = doc(firestore, `users/${userId}`);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc) {
+            const pantryRef = collection(userDocRef, 'pantry');
+            const pantrySnapshot = await getDocs(pantryRef);
+            const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            console.log('Pantry items:', items);
+
+            setPantryItems(items);
+          } else {
+            console.log('No user document found');
+          }
+        } catch (error) {
+          console.error('Error fetching pantry items:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPantryItems();
+    }
+  }, [status, session]);
   return (
     <Box
       width="100vw"
@@ -150,7 +251,7 @@ export default function Home() {;
                   }}
               />
             <Button variant="outline"sx={{backgroundColor: "#1976d2", color: "#fff"}} onClick={() =>  {
-              addItem(itemName, expiryDate);
+              addItem(itemName, 1,expiryDate);
               setItemName("");
               handleAddModalClose();
             }}>ADD</Button>
@@ -201,8 +302,8 @@ export default function Home() {;
               label="Search"
               variant="outlined"
               fullWidth
-              value={searchParam}
-              onChange={(e) => setSearchParam(e.target.value)}
+              value={param}
+              onChange={(e) => setParam(e.target.value)}
               InputLabelProps={{
                 style: { color: '#fff' },
               }}
@@ -224,7 +325,7 @@ export default function Home() {;
                 },
               }}
             />
-            <Button variant="contained">Search</Button>
+            <Button variant="contained" onClick={() => search(param)}>Search</Button>
           </Box>
         </Box>
         <Stack width="100vw" height="800px" spacing={2} overflow={"auto"} bgcolor={"#333"}>
@@ -233,7 +334,7 @@ export default function Home() {;
               No Pantry Items Found
             </Typography>
           ) : (
-          filteredPantry.map(({name, count}) => (
+          filteredPantry.map(({name, quantity}) => (
             <Box
               key={name}
               width="100%"
@@ -249,7 +350,7 @@ export default function Home() {;
               </Typography>
 
               <Typography variant={"h4"} color={"#fff"} textAlign={"center"}>
-                Quantity: {count}
+                Quantity: {quantity}
               </Typography>
             <Box gap={2} display={"flex"} justifyContent={"space-evenly"}>
               <Button variant="contained" onClick={handleUpdateModalOpen}>Update</Button>
