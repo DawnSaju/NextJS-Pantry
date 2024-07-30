@@ -1,7 +1,7 @@
 "use client";
 
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "./global.css";
 import { firebaseConfig } from "../firebase";
 import { FirebaseAppProvider } from "reactfire";
 import { SessionProvider } from "next-auth/react";
