@@ -3,6 +3,7 @@ import { session } from '../../../../lib/session'
 import { NextAuthOptions } from 'next-auth'
 import NextAuth from 'next-auth/next'
 import GoogleProvider from 'next-auth/providers/google'
+import GithubProvider from 'next-auth/providers/github'
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!
@@ -15,46 +16,27 @@ const authOption: NextAuthOptions = {
     },
     providers: [
       GoogleProvider({
-        clientId: "814261854319-f5rnp2faqis73t78cutcvfe3gckekv72.apps.googleusercontent.com",
-        clientSecret: "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",
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      }),
+      GithubProvider({
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
       }),
     ],
     callbacks: {
-        async signIn({ account, profile }) {
-          if (!profile?.email) {
-            throw new Error('No profile')
-          }
-    
-          await prisma.user.upsert({
-            where: {
-              email: profile.email,
-            },
-            create: {
-              email: profile.email,
-              name: profile.name,
-            },
-            update: {
-              name: profile.name,
-            },
-          })
-          return true
-        },
-        session,
-        async jwt({ token, user, account, profile }) {
-          if (profile) {
-            const user = await prisma.user.findUnique({
-              where: {
-                email: profile.email,
-              },
-            })
-            if (!user) {
-              throw new Error('No user found')
-            }
-            token.id = user.id
+        async jwt({ token, account }) {
+          if (account) {
+            token.accessToken = account.access_token
           }
           return token
         },
-      },
+
+        async session({ session, token, user }) {
+          session.accessToken = token.accessToken
+          return session
+        }
+      }
     }
     
 const handler = NextAuth(authOption)
