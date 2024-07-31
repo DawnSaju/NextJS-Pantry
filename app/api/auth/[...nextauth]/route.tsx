@@ -31,11 +31,6 @@ const authOption: NextAuthOptions = {
           }
           return token
         },
-
-        async session({ session, token, user }) {
-          session.accessToken = token.accessToken
-          return session
-        }
       }
     }
     
