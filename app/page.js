@@ -290,7 +290,7 @@ export default function Home() {;
 
       fetchPantryItems();
     }
-  }, [status, session]);
+  }, [status, session, userId]);
   return (
     <div className="flex-1">
       <Sidebar />
