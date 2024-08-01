@@ -781,7 +781,7 @@ export default function Home() {;
             </div>
             <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
                 <ul className="space-y-4">
-=                  {response ? (
+                  {response ? (
                     <div className="bg-gray-200 p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: response }} />
                   ) : (
                     <li className="text-gray-500">No recipe found.</li>
