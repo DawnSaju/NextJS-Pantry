@@ -487,28 +487,28 @@ export default function Home() {;
     }
   }
 
-  const suggestRecipe = async () => {
-    const openai = new OpenAI({ 
-      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, 
-      baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL, 
-    });
-
-    const jsonPantry = pantryItems.map(item => item.name).join(", ");
-
-    const prompt = 
-    `
-    Give me the suggested recipe based on the pantries that I have on me: ${jsonPantry}
-    `
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: "system", content: process.env.NEXT_PUBLIC_BASE, },
-        { role: "user", content: prompt, },
-      ],
-      model: process.env.NEXT_PUBLIC_MODEL,
-    });
+  const suggestRecipe = async (pantryItems) => {
+    try {
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pantryItems }),
+      });
   
-    setResponse(completion.choices[0].message.content);
-
+      const data = await response.json();
+      return data.suggestion 
+    } catch (error) {
+      console.error('Error:', error);
+      return "Error fetching suggestion";
+    }
+  };
+                                
+  const handleSuggestRecipe = async () => {
+    const result = await suggestRecipe(pantryItems);
+    setResponse(result);
+    
     if (session.user.id) {
       setUserId(session.user.id);
     } else {
@@ -520,7 +520,7 @@ export default function Home() {;
     const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const userPantryItems = items.map(item => item.name).join(", ");
     const recipeData = {
-      recipe: completion.choices[0].message.content,
+      recipe: response,
       pantryItems: pantryItems,
       createdAt: new Date().toISOString()
     };
@@ -528,6 +528,48 @@ export default function Home() {;
     await addDoc(recipeCollectionRef, recipeData);
     alert("Recipe suggestion saved successfully.");
   };
+
+  // const suggestRecipe = async () => {
+  //   const openai = new OpenAI({ 
+  //     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, 
+  //     baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL, 
+  //   });
+
+  //   const jsonPantry = pantryItems.map(item => item.name).join(", ");
+
+  //   const prompt = 
+  //   `
+  //   Give me the suggested recipe based on the pantries that I have on me: ${jsonPantry}
+  //   `
+  //   const completion = await openai.chat.completions.create({
+  //     messages: [
+  //       { role: "system", content: process.env.NEXT_PUBLIC_BASE, },
+  //       { role: "user", content: prompt, },
+  //     ],
+  //     model: process.env.NEXT_PUBLIC_MODEL,
+  //   });
+  
+  //   setResponse(completion.choices[0].message.content);
+
+  //   if (session.user.id) {
+  //     setUserId(session.user.id);
+  //   } else {
+  //     setUserId(session.user.name);
+  //   }
+  //   const userDocRef = doc(firestore, `users/${userId}`);
+  //   const pantryRef = collection(userDocRef, 'pantry');
+  //   const pantrySnapshot = await getDocs(pantryRef);
+  //   const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //   const userPantryItems = items.map(item => item.name).join(", ");
+  //   const recipeData = {
+  //     recipe: completion.choices[0].message.content,
+  //     pantryItems: pantryItems,
+  //     createdAt: new Date().toISOString()
+  //   };
+  //   const recipeCollectionRef = collection(firestore, `users/${userId}/recipes`);
+  //   await addDoc(recipeCollectionRef, recipeData);
+  //   alert("Recipe suggestion saved successfully.");
+  // };
 
   const addItem = async (itemName, itemQuantity, expiryDate) => {
     if (status === "authenticated") {
@@ -798,7 +840,7 @@ export default function Home() {;
                       className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
                     />
                     <button
-                      onClick={() => suggestRecipe()}
+                      onClick={() => handleSuggestRecipe()}
                       className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
                     >
                       Send
