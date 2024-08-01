@@ -9,9 +9,7 @@ export async function POST(req: Request) {
   if (req.method === 'POST') {
     try {
       const { pantryItems } = await req.json();
-
       const jsonPantry = pantryItems.map(item => item.name).join(", ");
-
       const prompt = `
         Give me the suggested recipe based on the pantries that I have on me: ${jsonPantry}
       `;
@@ -21,17 +19,17 @@ export async function POST(req: Request) {
           { role: "system", content: process.env.NEXT_PUBLIC_BASE },
           { role: "user", content: prompt },
         ],
-        model: process.env.NEXT_PUBLIC_MODEL,
+        model: process.env.MODEL,
       });
 
       const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
 
-      res.status(200).json({ suggestion });
+      return new Response(JSON.stringify({ suggestion }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+      console.error('Error in API route:', error);
+      return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
   } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return new Response(`Method ${req.method} Not Allowed`, { status: 405 });
   }
 }
