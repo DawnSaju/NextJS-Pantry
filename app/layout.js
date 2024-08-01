@@ -2,7 +2,7 @@
 
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { firebaseConfig } from "../firebase";
+import { firebaseConfig } from "./firebase";
 import { FirebaseAppProvider } from "reactfire";
 import { SessionProvider } from "next-auth/react";
 import Head from "next/head";
@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
   return (
     <FirebaseAppProvider firebaseConfig={firebaseConfig}>
       <SessionProvider>
-        <html lang="en">
+        <html className="h-screen w-screen bg-gradient-to-b from-green-100 to-green-200" lang="en">
           <Head>
             <title>Pantry App</title>
           </Head>
