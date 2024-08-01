@@ -489,8 +489,8 @@ export default function Home() {;
 
   const suggestRecipe = async () => {
     const openai = new OpenAI({ 
-      apiKey: process.env.OPENAI_API_KEY, 
-      baseURL: process.env.OPENAI_BASE_URL, 
+      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, 
+      baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL, 
     });
 
     const jsonPantry = pantryItems.map(item => item.name).join(", ");
@@ -501,10 +501,10 @@ export default function Home() {;
     `
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: "system", content: process.env.BASE, },
+        { role: "system", content: process.env.NEXT_PUBLIC_BASE, },
         { role: "user", content: prompt, },
       ],
-      model: process.env.MODEL,
+      model: process.env.NEXT_PUBLIC_MODEL,
     });
   
     setResponse(completion.choices[0].message.content);
