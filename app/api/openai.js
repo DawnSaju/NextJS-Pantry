@@ -5,7 +5,7 @@ const openai = new OpenAI({
   baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL,
 });
 
-export default async function handler(req, res) {
+export async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const { pantryItems } = req.body;
