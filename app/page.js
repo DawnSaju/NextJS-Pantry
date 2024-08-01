@@ -5,8 +5,8 @@ import { firestore } from "../firebase";
 import { collection, query, getDocs, where, doc, setDoc, deleteDoc, getDoc, addDoc,updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSession, signIn } from "next-auth/react";
-import { getUserSession } from '../../lib/session'
-import Sidebar from "../sidebar";
+import { getUserSession } from './../lib/session'
+import Sidebar from "./sidebar";
 import OpenAI from "openai";
 
 export default function Home() {;
