@@ -5,10 +5,10 @@ const openai = new OpenAI({
   baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL,
 });
 
-export async function handler(req, res) {
+export async function POST(req: Request) {
   if (req.method === 'POST') {
     try {
-      const { pantryItems } = req.body;
+      const { pantryItems } = await req.json();
 
       const jsonPantry = pantryItems.map(item => item.name).join(", ");
 
