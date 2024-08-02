@@ -58,34 +58,55 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("body", body);
-    const { pantryItems } = body;
+    const {isVision} = body;
+    
+    if (isVision === true) {
+      const { imageUrl } = body;
+      if (!imageUrl) {
+        return new Response(JSON.stringify({ error: "Image URL is required for vision analysis" }), { status: 400 });
+      }
 
-    if (!pantryItems || !Array.isArray(pantryItems)) {
-      console.log("Invalid input data");
+      const prompt = `Analyze the image and give me the exact name of the pantry item in this image: ${imageUrl}`;
+
+      const response = await openai.chat.completions.create({
+        model: process.env.VISION_MODEL,
+        messages: [
+          {"role": "user", "content": "Can you tell me more about yourself?"}
+        ],
+      });
+
+      const visionresult = response.choices || "No vision result available";
+      console.log("visionResult", visionresult);
+
+      return new Response(JSON.stringify({ visionResult: visionresult }));
+    } else {
+      const { pantryItems } = body;
+      if (!pantryItems || !Array.isArray(pantryItems)) {
+        alert("Invalid input data");
+      }
+
+      const jsonPantry = pantryItems.map((item: { name: string }) => item.name).join(", ");
+
+      const prompt = `
+        Give me the suggested recipe based on the pantries that I have on me: ${jsonPantry}
+      `;
+
+      const completion = await openai.chat.completions.create({
+        messages: [
+          { role: "system", content: process.env.BASE},
+          { role: "user", content: prompt },
+        ],
+        model: process.env.MODEL|| '',
+      });
+
+      const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
+
+      console.log(suggestion);
+
+      return new Response(JSON.stringify({ suggestion: suggestion }));
     }
-
-    const jsonPantry = pantryItems.map((item: { name: string }) => item.name).join(", ");
-
-    const prompt = `
-      Give me the suggested recipe based on the pantries that I have on me: ${jsonPantry}
-    `;
-
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: "system", content: process.env.NEXT_PUBLIC_BASE },
-        { role: "user", content: prompt },
-      ],
-      model: process.env.NEXT_PUBLIC_MODEL || '',
-    });
-
-    const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
-
-    console.log(suggestion);
-
-    return new Response(JSON.stringify({ suggestion: suggestion }));
   } catch (error) {
-    return new Response(JSON.stringify({ suggestion: "Internal Server Error" }));
+    return new Response(JSON.stringify({ suggestion: error }));
   }
 
 }
