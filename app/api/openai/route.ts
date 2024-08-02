@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: "system", content: process.env.NEXT_PUBLIC_BASE,
+        { role: "system", content: process.env.NEXT_PUBLIC_BASE },
         { role: "user", content: prompt },
       ],
       model: process.env.NEXT_PUBLIC_MODEL || '',
