@@ -414,7 +414,7 @@
 "use client";
 
 import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
-import { firestore, storage, ref, uploadBytes } from "../firebase";
+import { firestore, storage, ref, uploadBytes, getDownloadURL } from "../firebase";
 import { collection, query, getDocs, where, doc, setDoc, deleteDoc, getDoc, addDoc,updateDoc } from "firebase/firestore";
 import { useEffect, useState, useRef } from "react";
 import { update } from "firebase/database";
@@ -503,7 +503,20 @@ export default function Home() {;
       });
 
       alert('Image uploaded successfully!');
+      console.log('Image URL:', downloadURL);
       handleCameraModalClose();
+
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isVision: true, imageUrl: downloadURL }),
+      });
+
+      const result = await response.json();
+      console.log('Vision API result:', result);
+      alert(result.visionResult);
     } catch (error) {
       console.error("Error uploading image: ", error);
       handleCameraModalClose();
