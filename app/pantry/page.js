@@ -422,16 +422,12 @@ import { useSession, signIn } from "next-auth/react";
 import { getUserSession } from '../../lib/session'
 import Sidebar from "../sidebar";
 import OpenAI from "openai";
+import { Camera } from "react-camera-pro";
 
 export default function Home() {;
   const [pantry, setPantry] = useState([]);
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [openUpdateModal, setOpenUpdateModal] = useState(false);
-  const handleAddModalOpen = () => setOpenAddModal(true);
-  const handleAddModalClose = () => setOpenAddModal(false);
-
-  const handleUpdateModalOpen = () => setOpenUpdateModal(true);
-  const handleUpdateModalClose = () => setOpenUpdateModal(false);
+  const [openCameraModal, setOpenCameraModal] = useState(false);
+  const handleCameraModalOpen = () => setOpenCameraModal(true);
   const [itemName, setItemName] = useState("");
   const [itemQuantity, setQuantity] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -445,6 +441,8 @@ export default function Home() {;
   const [currDate, setCurrDate] = useState(new Date());
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState(null);
+  const camera = useRef(null);
+  const [image, setImage] = useState(null);
 
   const { data: session, status } = useSession();
 
@@ -486,6 +484,42 @@ export default function Home() {;
       setSearchParam(param);
     }
   }
+    
+  const handleCameraModalClose = () => {
+    setOpenCameraModal(false);
+  };
+
+  const captureImage = async () => {
+    const photo = camera.current.takePhoto();
+    const storageRef = ref(storage, `users/${userId}/images/${Date.now()}.jpg`);
+
+    try {
+      const snapshot = await uploadBytes(storageRef, dataURLtoBlob(photo));
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      await addDoc(collection(firestore, `users/${userId}/images`), {
+        url: downloadURL,
+        timestamp: new Date()
+      });
+
+      alert('Image uploaded successfully!');
+      handleCameraModalClose();
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+      handleCameraModalClose();
+    }
+  };
+
+  const dataURLtoBlob = (dataURL) => {
+    const byteString = atob(dataURL.split(',')[1]);
+    const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  };
 
   const suggestRecipe = async (pantryItems) => {
     try {
@@ -780,7 +814,24 @@ export default function Home() {;
                 >
                   Add Item
                 </button>
+                <button
+                  onClick={() => handleCameraModalOpen()}
+                  className="w-full p-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition"
+                >
+                  Upload Image
+                </button>
               </div>
+              <Modal open={openCameraModal} onClose={handleCameraModalClose}>
+                <Box sx={style}>
+                  <Typography variant="h6" component="h2">
+                    Pantry Analysis
+                  </Typography>
+                  <Camera ref={camera} aspectRatio={16 / 9} />
+                  <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={captureImage}>
+                    Capture Image
+                  </Button>
+                </Box>
+              </Modal>
               <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Search & Manage Pantry Items</h2>
                 <input
