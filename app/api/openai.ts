@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-});
-
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
+  const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL,
+  });
+
   try {
     const { pantryItems } = req.body;
 
@@ -22,10 +22,10 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
 
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: "system", content: process.env.BASE || '' },
+        { role: "system", content: process.env.NEXT_PUBLIC_BASE || '' },
         { role: "user", content: prompt },
       ],
-      model: process.env.MODEL || '',
+      model: process.env.NEXT_PUBLIC_MODEL || '',
     });
 
     const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
