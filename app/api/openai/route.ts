@@ -102,7 +102,6 @@ export async function POST(req: Request) {
       const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
 
       console.log(suggestion);
-
       return new Response(JSON.stringify({ suggestion: suggestion }));
     }
   } catch (error) {
