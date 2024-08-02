@@ -1,11 +1,10 @@
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-});
-
 export async function POST(req: Request) {
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL,
+  });
   if (req.method === 'POST') {
     try {
       const { pantryItems } = await req.json();
