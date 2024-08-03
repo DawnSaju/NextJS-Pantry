@@ -442,6 +442,7 @@ export default function Home() {;
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState(null);
   const camera = useRef(null);
+  const [numberOfCameras, setNumberOfCameras] = useState(0);
   const [image, setImage] = useState(null);
 
   const { data: session, status } = useSession();
@@ -863,11 +864,12 @@ export default function Home() {;
                   <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={captureImage}>
                     Capture Image
                   </Button>
-                  <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={() => {
-                        const photo = camera.current.takePhoto();
-                          setImage(photo);
-                        }}>
-                        Switch Camera
+                  <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" 
+                        hidden={numberOfCameras <= 1}
+                        onClick={() => {
+                          camera.current.switchCamera();
+                        }}
+                      >Switch Camera
                  </Button>
                 </Box>
               </Modal>
