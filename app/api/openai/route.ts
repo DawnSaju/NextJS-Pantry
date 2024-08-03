@@ -61,7 +61,23 @@ export async function POST(req: Request) {
     const {isVision} = body;
     
     if (isVision === true) {
-      console.log("VISION")
+      const { imageUrl } = body;
+
+      const prompt = `Analyze the image and give me the exact name of the pantry item in this image: ${imageUrl}`;
+
+      const completion = await openai.chat.completions.create({
+        messages: [
+          { role: "system", content: process.env.NEXT_PUBLIC_VISION_BASE || '' },
+          { role: "user", content: prompt },
+        ],
+        model: process.env.NEXT_PUBLIC_VISION_MODEL|| '',
+      });
+
+      const visionresult = completion.choices[0]?.message?.content || "No suggestion available";
+
+      console.log(visionresult);
+
+      return new Response(JSON.stringify({ visionResult: visionresult }));
     } else {
       const { pantryItems } = body;
       if (!pantryItems || !Array.isArray(pantryItems)) {
@@ -85,6 +101,7 @@ export async function POST(req: Request) {
       const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
 
       console.log(suggestion);
+
       return new Response(JSON.stringify({ suggestion: suggestion }));
     }
   } catch (error) {
