@@ -49,6 +49,7 @@
 
 
 import { OpenAI } from 'openai';
+import { getUserSession } from '../../../lib/session';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -57,6 +58,17 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
+    const user = await getUserSession();
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+    
+    const session = await getSession({ req });
+  
+    if (!session) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
     const body = await req.json();
     const {isVision} = body;
     
