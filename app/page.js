@@ -26,13 +26,6 @@ const LandingPage = () => {
 
     <header className="flex justify-between items-center p-5">
       <div className="text-2xl font-bold">🥫 Pantry App</div>
-      <nav>
-        <ul className="flex space-x-4">
-          <li><a href="#features" className="hover:underline">Features</a></li>
-          <li><a href="#about" className="hover:underline">About</a></li>
-          <li><a href="#contact" className="hover:underline">Contact</a></li>
-        </ul>
-      </nav>
       <div>
       {status === "loading" ? (
         <p>Loading...</p>
