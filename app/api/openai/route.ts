@@ -63,12 +63,6 @@ export async function POST(req: Request) {
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
-    
-    const session = await getSession({ req });
-  
-    if (!session) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
     const body = await req.json();
     const {isVision} = body;
     
