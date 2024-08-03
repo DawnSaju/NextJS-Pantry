@@ -515,8 +515,28 @@ export default function Home() {;
       });
 
       const result = await response.json();
-      console.log('Vision API result:', result);
-      alert(result.visionResult);
+      const UserexpiryDate = prompt("Enter the expiry date for this item (DD-MM-YYYY):");
+      if (!UserexpiryDate || !/^\d{2}-\d{2}-\d{4}$/.test(UserexpiryDate)) {
+        alert("Invalid Format. DD-MM-YYYY.");
+      }
+      const [day, month, year] = UserexpiryDate.split('-').map(Number);
+      const expiryDate = new Date(year, month - 1, day);
+      const curr = new Date();
+      curr.setHours(0, 0, 0, 0);
+    
+      if (expiryDate < curr) {
+        alert("Expiry date cannot be a past date.");
+      } else {
+        console.log('Vision API result:', result);
+        const json_data = JSON.parse( result.visionResult);
+        console.log(json_data);
+        await addDoc(collection(firestore, `users/${userId}/pantry`), {
+          name: json_data.name,
+          quantity: 1,
+          expiryDate: UserexpiryDate,
+        });
+        updatePantry(); 
+      }
     } catch (error) {
       console.error("Error uploading image: ", error);
       handleCameraModalClose();
@@ -843,6 +863,12 @@ export default function Home() {;
                   <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={captureImage}>
                     Capture Image
                   </Button>
+                  <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={() => {
+                        const photo = camera.current.takePhoto();
+                          setImage(photo);
+                        }}>
+                        Switch Camera
+                 </Button>
                 </Box>
               </Modal>
               <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
