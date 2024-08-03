@@ -114,7 +114,7 @@ const LandingPage = () => {
                                   stroke="#fff" stroke-width="2"></path>
                           </svg>
                           <h3 class="mt-6 text-2xl font-bold text-white sm:mt-10">Pantry Classification</h3>
-                          <p class="mt-6 text-base text-gray-200">Leveraging Claude vision API to classify pantry items</p> 
+                          <p class="mt-6 text-base text-gray-200">Leveraging Vision API to classify pantry items</p> 
                       </div>
                   </div>
                   <div class="relative">
