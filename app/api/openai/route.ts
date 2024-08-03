@@ -61,24 +61,7 @@ export async function POST(req: Request) {
     const {isVision} = body;
     
     if (isVision === true) {
-      const { imageUrl } = body;
-      if (!imageUrl) {
-        return new Response(JSON.stringify({ error: "Image URL is required for vision analysis" }), { status: 400 });
-      }
-
-      const prompt = `Analyze the image and give me the exact name of the pantry item in this image: ${imageUrl}`;
-
-      const response = await openai.chat.completions.create({
-        model: process.env.VISION_MODEL,
-        messages: [
-          {"role": "user", "content": "Can you tell me more about yourself?"}
-        ],
-      });
-
-      const visionresult = response.choices || "No vision result available";
-      console.log("visionResult", visionresult);
-
-      return new Response(JSON.stringify({ visionResult: visionresult }));
+      console.log("VISION")
     } else {
       const { pantryItems } = body;
       if (!pantryItems || !Array.isArray(pantryItems)) {
