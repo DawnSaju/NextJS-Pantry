@@ -79,7 +79,7 @@ export async function POST(req: Request) {
           { role: "system", content: process.env.BASE},
           { role: "user", content: prompt },
         ],
-        model: process.env.MODEL|| '',
+        model: process.env.NEXT_PUBLIC_MODEL|| '',
       });
 
       const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
