@@ -446,7 +446,7 @@ export default function Home() {;
   const [image, setImage] = useState(null);
   const [facingMode, setFacingMode] = useState("environment");                              
   const videoConstraints = {
-    facingMode: { exact: "environment" },
+    facingMode: "environment",
   };
 
   const { data: session, status } = useSession();
