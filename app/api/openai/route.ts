@@ -51,8 +51,8 @@
 import { OpenAI } from 'openai';
 
 const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL,
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL,
 });
 
 export async function POST(req: Request) {
@@ -67,10 +67,10 @@ export async function POST(req: Request) {
 
       const completion = await openai.chat.completions.create({
         messages: [
-          { role: "system", content: process.env.NEXT_PUBLIC_VISION_BASE || '' },
+          { role: "system", content: process.env.VISION_BASE || '' },
           { role: "user", content: prompt },
         ],
-        model: process.env.NEXT_PUBLIC_VISION_MODEL|| '',
+        model: process.env.VISION_MODEL|| '',
       });
 
       const visionresult = completion.choices[0]?.message?.content || "No suggestion available";
@@ -92,10 +92,10 @@ export async function POST(req: Request) {
 
       const completion = await openai.chat.completions.create({
         messages: [
-          { role: "system", content: process.env.NEXT_PUBLIC_BASE},
+          { role: "system", content: process.env.BASE},
           { role: "user", content: prompt },
         ],
-        model: process.env.NEXT_PUBLIC_MODEL|| '',
+        model: process.env.MODEL|| '',
       });
 
       const suggestion = completion.choices[0]?.message?.content || "No suggestion available";
