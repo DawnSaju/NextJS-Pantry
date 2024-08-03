@@ -860,7 +860,7 @@ export default function Home() {;
                   <Typography variant="h6" component="h2">
                     Pantry Analysis
                   </Typography>
-                  <Camera ref={camera} aspectRatio={16 / 9} />
+                  <Camera ref={camera} facingMode='environment' aspectRatio={16 / 9} />
                   <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={captureImage}>
                     Capture Image
                   </Button>
