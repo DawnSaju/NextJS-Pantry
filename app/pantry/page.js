@@ -865,7 +865,7 @@ export default function Home() {;
                     Capture Image
                   </Button>
                   <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" 
-                        hidden={numberOfCameras <= 1}
+                        // hidden={numberOfCameras <= 1}
                         onClick={() => {
                           camera.current.switchCamera();
                         }}
