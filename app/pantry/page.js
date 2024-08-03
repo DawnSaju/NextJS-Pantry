@@ -541,7 +541,7 @@ export default function Home() {;
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ pantryItems }),
+        body: JSON.stringify({ isVision:false, pantryItems }),
       });
   
       const data = await response.json();
