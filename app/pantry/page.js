@@ -184,6 +184,56 @@ export default function Home() {;
     return new Blob([ab], { type: mimeString });
   };
 
+  // const suggestRecipe = async (pantryItems) => {
+  //   try {
+  //     if (pantryItems.length === 0) {
+  //       Swal.fire({
+  //         icon: 'error',
+  //         title: 'Empty Pantry',
+  //         text: 'Please add items to your pantry to get recipe suggestions.',
+  //       });
+  //       return;
+  //     }
+  //     const response = await fetch('/api/openai', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ isVision:false, pantryItems }),
+  //     });
+  
+  //     const data = await response.json();
+  //     return data.suggestion 
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     return "Error fetching suggestion";
+  //   }
+  // };
+                                
+  // const handleSuggestRecipe = async () => {
+  //   const result = await suggestRecipe(pantryItems);
+  //   setResponse(result);
+    
+  //   if (session.user.id) {
+  //     setUserId(session.user.id);
+  //   } else {
+  //     setUserId(session.user.name);
+  //   }
+  //   const userDocRef = doc(firestore, `users/${userId}`);
+  //   const pantryRef = collection(userDocRef, 'pantry');
+  //   const pantrySnapshot = await getDocs(pantryRef);
+  //   const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //   const userPantryItems = items.map(item => item.name).join(", ");
+  //   const recipeData = {
+  //     recipe: response,
+  //     pantryItems: pantryItems,
+  //     createdAt: new Date().toISOString()
+  //   };
+  //   const recipeCollectionRef = collection(firestore, `users/${userId}/recipes`);
+  //   await addDoc(recipeCollectionRef, recipeData);
+  //   alert("Recipe suggestion saved successfully.");
+  // };
+
   const suggestRecipe = async (pantryItems) => {
     try {
       if (pantryItems.length === 0) {
@@ -192,46 +242,61 @@ export default function Home() {;
           title: 'Empty Pantry',
           text: 'Please add items to your pantry to get recipe suggestions.',
         });
-        return;
+        return {"code": 404, "message": "Empty Pantry"};
+      } else {
+        const response = await fetch('api/openai', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ pantryItems }),
+        });
+    
+        const data = await response.json();
+        return data.suggestion 
       }
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isVision:false, pantryItems }),
-      });
-  
-      const data = await response.json();
-      return data.suggestion 
     } catch (error) {
       console.error('Error:', error);
-      return "Error fetching suggestion";
+      return "API down. Please try again later.";
     }
   };
                                 
   const handleSuggestRecipe = async () => {
     const result = await suggestRecipe(pantryItems);
     setResponse(result);
-    
-    if (session.user.id) {
-      setUserId(session.user.id);
+
+    if (result.code === 404) {
+      return;
     } else {
-      setUserId(session.user.name);
+      if (session.user.id) {
+        setUserId(session.user.id);
+      } else {
+        setUserId(session.user.name);
+      }
+  
+      if (!response) {
+        console.error("No recipe found.");
+        return;
+      } else {
+        const userDocRef = doc(firestore, `users/${userId}`);
+        const pantryRef = collection(userDocRef, 'pantry');
+        const pantrySnapshot = await getDocs(pantryRef);
+        const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const userPantryItems = items.map(item => item.name).join(", ");
+        const recipeData = {
+          recipe: response,
+          pantryItems: pantryItems,
+          createdAt: new Date().toISOString()
+        };
+        const recipeCollectionRef = collection(firestore, `users/${userId}/recipes`);
+        await addDoc(recipeCollectionRef, recipeData);
+        Swal.fire({
+          icon: 'success',
+          title: 'Recipe Suggestion',
+          text: response,
+        });
+      }
     }
-    const userDocRef = doc(firestore, `users/${userId}`);
-    const pantryRef = collection(userDocRef, 'pantry');
-    const pantrySnapshot = await getDocs(pantryRef);
-    const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const userPantryItems = items.map(item => item.name).join(", ");
-    const recipeData = {
-      recipe: response,
-      pantryItems: pantryItems,
-      createdAt: new Date().toISOString()
-    };
-    const recipeCollectionRef = collection(firestore, `users/${userId}/recipes`);
-    await addDoc(recipeCollectionRef, recipeData);
-    alert("Recipe suggestion saved successfully.");
   };
 
   const addItem = async (itemName, itemQuantity, expiryDate) => {
