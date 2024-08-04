@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
           <Head>
             <title>Pantry App</title>
           </Head>
-          <body style={{ overflowX: 'hidden' }}>
+          <body className={inter.className} style={{ overflowX: 'hidden' }}>
             {children}
           </body>
           <GoogleAnalytics gaId="G-ZVHVLJMJWF" />
