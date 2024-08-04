@@ -184,56 +184,6 @@ export default function Home() {;
     return new Blob([ab], { type: mimeString });
   };
 
-  // const suggestRecipe = async (pantryItems) => {
-  //   try {
-  //     if (pantryItems.length === 0) {
-  //       Swal.fire({
-  //         icon: 'error',
-  //         title: 'Empty Pantry',
-  //         text: 'Please add items to your pantry to get recipe suggestions.',
-  //       });
-  //       return;
-  //     }
-  //     const response = await fetch('/api/openai', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ isVision:false, pantryItems }),
-  //     });
-  
-  //     const data = await response.json();
-  //     return data.suggestion 
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     return "Error fetching suggestion";
-  //   }
-  // };
-                                
-  // const handleSuggestRecipe = async () => {
-  //   const result = await suggestRecipe(pantryItems);
-  //   setResponse(result);
-    
-  //   if (session.user.id) {
-  //     setUserId(session.user.id);
-  //   } else {
-  //     setUserId(session.user.name);
-  //   }
-  //   const userDocRef = doc(firestore, `users/${userId}`);
-  //   const pantryRef = collection(userDocRef, 'pantry');
-  //   const pantrySnapshot = await getDocs(pantryRef);
-  //   const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  //   const userPantryItems = items.map(item => item.name).join(", ");
-  //   const recipeData = {
-  //     recipe: response,
-  //     pantryItems: pantryItems,
-  //     createdAt: new Date().toISOString()
-  //   };
-  //   const recipeCollectionRef = collection(firestore, `users/${userId}/recipes`);
-  //   await addDoc(recipeCollectionRef, recipeData);
-  //   alert("Recipe suggestion saved successfully.");
-  // };
-
   const suggestRecipe = async (pantryItems) => {
     try {
       if (pantryItems.length === 0) {
@@ -483,134 +433,145 @@ export default function Home() {;
     }
   }, [status, session, userId]);
   return (
-    <div className="flex-1">
-      <Sidebar />
-      <main className="main flex justify-center items-center bg-gradient-to-b from-green-100 to-green-200">
-        <div className="max-w-6xl mx-auto p-2">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <p className="text-lg mb-6 text-gray-600 p-8">Manage your pantry items with ease. Add, update, remove, and search your pantry items all in one place.</p>
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Add New Item</h2>
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={pantryItems.name}
-                  onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                  className="w-full p-3 mb-2 border border-gray-300 rounded-lg"
-                />
-                <input
-                  type="number"
-                  placeholder="Quantity"
-                  value={pantryItems.quantity}
-                  onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
-                  className="w-full p-3 mb-2 border border-gray-300 rounded-lg"
-                />
-                <input
-                  type="date"
-                  placeholder="Expiry Date"
-                  value={pantryItems.expiryDate}
-                  min={getCurrentDate()}
-                  onChange={(e) => setNewItem({ ...newItem, expiryDate: e.target.value })}
-                  className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
-                />
-                <button
-                  onClick={() => addItem(newItem.name, newItem.quantity, newItem.expiryDate)}
-                  className="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                >
-                  Add Item
-                </button>
-                <button
-                  onClick={() => handleCameraModalOpen()}
-                  className="w-full p-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition"
-                >
-                  Upload Image
-                </button>
-              </div>
-              <Modal open={openCameraModal} onClose={handleCameraModalClose}>
-                <Box sx={style}>
-                  <Typography variant="h6" component="h2">
-                    Pantry Analysis
-                  </Typography>
-                  <Camera ref={camera} videoConstraints={{
-          ...videoConstraints,
-          facingMode
-        }} aspectRatio={16 / 9} />
-                  <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={captureImage}>
-                    Capture Image
-                  </Button>
-                  <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" 
-                        // hidden={numberOfCameras <= 1}
-                        onClick={() => {
-                          camera.current.switchCamera();
-                        }}
-                      >Switch Camera
-                 </Button>
-                </Box>
-              </Modal>
-              <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Search & Manage Pantry Items</h2>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchParam}
-                  onChange={(e) => setSearchParam(e.target.value)}
-                  className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
-                />
-                <ul className="space-y-4">
-                  {filteredPantry.length > 0 ? (
-                    filteredPantry.map(item => (
-                      <li key={item.id} className="flex justify-between items-center p-4 border border-gray-300 rounded-lg bg-gray-50">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-                          <p>Quantity: {item.quantity}</p>
-                          <p>Expiry Date: {item.expiryDate}</p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => updateItem(item.name, parseInt(item.quantity) + 1)}
-                            className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                          >
-                            +
-                          </button>
-                          <button
-                            onClick={() => removeItem(item.name)}
-                            className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-gray-500">No items found.</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-            <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
-                <ul className="space-y-4">
-                  {response ? (
-                    <div className="bg-gray-200 p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: response }} />
-                  ) : (
-                    <li className="text-gray-500">No recipe found.</li>
-                  )}
-                </ul>
-              </div>
-              <div className="flex justify-between items-center p-4 border border-gray-300 rounded-lg bg-gray-50">
-                  <div className="flex w-full justify-center items-center">
+    <html>
+      <head>
+        <title>Pantry App</title>
+        <meta name="description" content="Effortlessly manage your pantry inventory with our NextJS & Firebase powered Pantry App." />
+        <meta name="keywords" content="pantry, inventory, management, nextjs, firebase, dawnsaju, headstarter" />
+        <meta name="author" content="Dawn Saju" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body>
+        <div className="flex-1">
+          <Sidebar />
+          <main className="main flex justify-center items-center bg-gradient-to-b from-green-100 to-green-200">
+            <div className="max-w-6xl mx-auto p-2">
+              <div className="bg-white rounded-lg shadow-lg p-8">
+                <p className="text-lg mb-6 text-gray-600 p-8">Manage your pantry items with ease. Add, update, remove, and search your pantry items all in one place.</p>
+                <div className="flex flex-col lg:flex-row gap-8">
+                  <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-800">Add New Item</h2>
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={pantryItems.name}
+                      onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                      className="w-full p-3 mb-2 border border-gray-300 rounded-lg"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Quantity"
+                      value={pantryItems.quantity}
+                      onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
+                      className="w-full p-3 mb-2 border border-gray-300 rounded-lg"
+                    />
+                    <input
+                      type="date"
+                      placeholder="Expiry Date"
+                      value={pantryItems.expiryDate}
+                      min={getCurrentDate()}
+                      onChange={(e) => setNewItem({ ...newItem, expiryDate: e.target.value })}
+                      className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
+                    />
                     <button
-                      onClick={() => handleSuggestRecipe()}
-                      className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition lg:w-screen"
+                      onClick={() => addItem(newItem.name, newItem.quantity, newItem.expiryDate)}
+                      className="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
                     >
-                      Generate Recipe
+                      Add Item
+                    </button>
+                    <button
+                      onClick={() => handleCameraModalOpen()}
+                      className="w-full p-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition"
+                    >
+                      Upload Image
                     </button>
                   </div>
+                  <Modal open={openCameraModal} onClose={handleCameraModalClose}>
+                    <Box sx={style}>
+                      <Typography variant="h6" component="h2">
+                        Pantry Analysis
+                      </Typography>
+                      <Camera ref={camera} videoConstraints={{
+              ...videoConstraints,
+              facingMode
+            }} aspectRatio={16 / 9} />
+                      <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onClick={captureImage}>
+                        Capture Image
+                      </Button>
+                      <Button className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" 
+                            // hidden={numberOfCameras <= 1}
+                            onClick={() => {
+                              camera.current.switchCamera();
+                            }}
+                          >Switch Camera
+                     </Button>
+                    </Box>
+                  </Modal>
+                  <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-800">Search & Manage Pantry Items</h2>
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchParam}
+                      onChange={(e) => setSearchParam(e.target.value)}
+                      className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
+                    />
+                    <ul className="space-y-4">
+                      {filteredPantry.length > 0 ? (
+                        filteredPantry.map(item => (
+                          <li key={item.id} className="flex justify-between items-center p-4 border border-gray-300 rounded-lg bg-gray-50">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
+                              <p>Quantity: {item.quantity}</p>
+                              <p>Expiry Date: {item.expiryDate}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => updateItem(item.name, parseInt(item.quantity) + 1)}
+                                className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                              >
+                                +
+                              </button>
+                              <button
+                                onClick={() => removeItem(item.name)}
+                                className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-gray-500">No items found.</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+                <div className="flex-1 bg-white p-6 rounded-lg shadow-md">
+                    <ul className="space-y-4">
+                      {response ? (
+                        <div className="bg-gray-200 p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: response }} />
+                      ) : (
+                        <li className="text-gray-500">No recipe found.</li>
+                      )}
+                    </ul>
+                  </div>
+                  <div className="flex justify-between items-center p-4 border border-gray-300 rounded-lg bg-gray-50">
+                      <div className="flex w-full justify-center items-center">
+                        <button
+                          onClick={() => handleSuggestRecipe()}
+                          className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition lg:w-screen"
+                        >
+                          Generate Recipe
+                        </button>
+                      </div>
+                  </div>
               </div>
-          </div>
+            </div>
+          </main>
         </div>
-      </main>
-    </div>
+      </body>
+  </html>
   );
 }
 
