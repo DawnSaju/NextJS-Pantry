@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
             {children}
             <SpeedInsights />
           </body>
-          <GoogleAnalytics gaId=process.env.GOOGLE_ANALYTICS />
+          <GoogleAnalytics gaId={process.env.GOOGLE_ANALYTICS} />
         </html>
       </SessionProvider>
     </FirebaseAppProvider>
