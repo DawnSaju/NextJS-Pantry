@@ -21,7 +21,7 @@
     "firebase": "^9.23.0",
     "openai": "^4.53.2",
     "lucide-react": "^0.417.0",
-    "styled-components": "^6.1.12",
+    "styled-components": "^5.3.11",
     "next": "14.2.5",
     "next-auth": "^4.24.7",
     "prisma": "^5.17.0",
