@@ -84,91 +84,91 @@ export default function Home() {;
   };
 
   const captureImage = async () => {
-    const photo = camera.current.takePhoto();
-    const storageRef = ref(storage, `users/${userId}/images/${Date.now()}.jpg`);
-  
-    try {
-      Swal.fire({
-        title: 'Uploading image...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-  
-      const snapshot = await uploadBytes(storageRef, dataURLtoBlob(photo));
-      const downloadURL = await getDownloadURL(snapshot.ref);
-  
-      await addDoc(collection(firestore, `users/${userId}/images`), {
-        url: downloadURL,
-        timestamp: new Date(),
-      });
-  
-      Swal.close();
-  
-      Swal.fire('Success', 'Image uploaded successfully!', 'success');
-  
-      handleCameraModalClose();
-  
-      Swal.fire({
-        title: 'Analyzing image...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-  
-      const response = await fetch('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isVision: true, imageUrl: downloadURL }),
-      });
-  
-      const result = await response.json();
-      Swal.close();
-  
-      const { value: UserexpiryDate } = await Swal.fire({
-        title: 'Enter the expiry date for this item (DD-MM-YYYY)',
-        input: 'text',
-        inputPlaceholder: 'DD-MM-YYYY',
-        inputValidator: (value) => {
-          if (!value || !/^\d{2}-\d{2}-\d{4}$/.test(value)) {
-            return 'Invalid Format. DD-MM-YYYY.';
-          }
-        },
-      });
-  
-      if (UserexpiryDate) {
-        const [day, month, year] = UserexpiryDate.split('-').map(Number);
-        const expiryDate = new Date(year, month - 1, day);
-        const curr = new Date();
-        curr.setHours(0, 0, 0, 0);
-  
-        if (expiryDate < curr) {
-          Swal.fire('Error', 'Expiry date cannot be a past date.', 'error');
-        } else {
-          const json_data = JSON.parse(result.visionResult);
-  
-          await addDoc(collection(firestore, `users/${userId}/pantry`), {
-            name: json_data.name,
-            quantity: 1,
-            expiryDate: UserexpiryDate,
-          });
-  
-          Swal.fire('Success', 'Pantry item added successfully!', 'success');
-          updatePantry();
+  const photo = camera.current.takePhoto();
+  const storageRef = ref(storage, `users/${userId}/images/${Date.now()}.jpg`);
+
+  try {
+    Swal.fire({
+      title: 'Uploading image...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const snapshot = await uploadBytes(storageRef, dataURLtoBlob(photo));
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    await addDoc(collection(firestore, `users/${userId}/images`), {
+      url: downloadURL,
+      timestamp: new Date(),
+    });
+
+    Swal.close();
+
+    Swal.fire('Success', 'Image uploaded successfully!', 'success');
+
+    handleCameraModalClose();
+
+    Swal.fire({
+      title: 'Analyzing image...',
+      text: 'Please wait',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const response = await fetch('/api/openai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ isVision: true, imageUrl: downloadURL }),
+    });
+
+    const result = await response.json();
+    Swal.close();
+
+    const { value: UserexpiryDate } = await Swal.fire({
+      title: 'Enter the expiry date for this item (DD-MM-YYYY)',
+      input: 'text',
+      inputPlaceholder: 'DD-MM-YYYY',
+      inputValidator: (value) => {
+        if (!value || !/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+          return 'Invalid Format. DD-MM-YYYY.';
         }
+      },
+    });
+
+    if (UserexpiryDate) {
+      const [day, month, year] = UserexpiryDate.split('-').map(Number);
+      const expiryDate = new Date(year, month - 1, day);
+      const curr = new Date();
+      curr.setHours(0, 0, 0, 0);
+
+      if (expiryDate < curr) {
+        Swal.fire('Error', 'Expiry date cannot be a past date.', 'error');
+      } else {
+        const json_data = JSON.parse(result.visionResult);
+
+        await addDoc(collection(firestore, `users/${userId}/pantry`), {
+          name: json_data.name,
+          quantity: 1,
+          expiryDate: UserexpiryDate,
+        });
+
+        Swal.fire('Success', 'Pantry item added successfully!', 'success');
+        updatePantry();
       }
-    } catch (error) {
-      console.error("Error uploading image: ", error);
-      handleCameraModalClose();
-      Swal.close();
-      Swal.fire('Error', 'There was an error uploading the image.', 'error');
     }
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+    handleCameraModalClose();
+    Swal.close();
+    Swal.fire('Error', 'There was an error uploading the image.', 'error');
+  }
 
   const dataURLtoBlob = (dataURL) => {
     const byteString = atob(dataURL.split(',')[1]);
