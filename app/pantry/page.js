@@ -188,48 +188,6 @@ export default function Home() {;
     alert("Recipe suggestion saved successfully.");
   };
 
-  // const suggestRecipe = async () => {
-  //   const openai = new OpenAI({ 
-  //     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, 
-  //     baseURL: process.env.NEXT_PUBLIC_OPENAI_BASE_URL, 
-  //   });
-
-  //   const jsonPantry = pantryItems.map(item => item.name).join(", ");
-
-  //   const prompt = 
-  //   `
-  //   Give me the suggested recipe based on the pantries that I have on me: ${jsonPantry}
-  //   `
-  //   const completion = await openai.chat.completions.create({
-  //     messages: [
-  //       { role: "system", content: process.env.NEXT_PUBLIC_BASE, },
-  //       { role: "user", content: prompt, },
-  //     ],
-  //     model: process.env.NEXT_PUBLIC_MODEL,
-  //   });
-  
-  //   setResponse(completion.choices[0].message.content);
-
-  //   if (session.user.id) {
-  //     setUserId(session.user.id);
-  //   } else {
-  //     setUserId(session.user.name);
-  //   }
-  //   const userDocRef = doc(firestore, `users/${userId}`);
-  //   const pantryRef = collection(userDocRef, 'pantry');
-  //   const pantrySnapshot = await getDocs(pantryRef);
-  //   const items = pantrySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  //   const userPantryItems = items.map(item => item.name).join(", ");
-  //   const recipeData = {
-  //     recipe: completion.choices[0].message.content,
-  //     pantryItems: pantryItems,
-  //     createdAt: new Date().toISOString()
-  //   };
-  //   const recipeCollectionRef = collection(firestore, `users/${userId}/recipes`);
-  //   await addDoc(recipeCollectionRef, recipeData);
-  //   alert("Recipe suggestion saved successfully.");
-  // };
-
   const addItem = async (itemName, itemQuantity, expiryDate) => {
     if (status === "authenticated") {
       if (session.user.id) {
@@ -240,6 +198,15 @@ export default function Home() {;
   
       if (!itemName || !itemQuantity || !expiryDate) {
         console.error("Item name, quantity, and expiry date are required");
+        return;
+      }
+
+      const parsedExpiryDate = parse(expiryDate, 'dd-MM-yyyy', new Date());
+      const today = new Date();
+      const formattedToday = format(today, 'dd-MM-yyyy');
+  
+      if (parsedExpiryDate < today) {
+        alert(`The expiry date ${expiryDate} is before today's date ${formattedToday}`);
         return;
       }
   
