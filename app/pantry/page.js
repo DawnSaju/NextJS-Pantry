@@ -3,6 +3,7 @@
 import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
 import { firestore, storage, ref, uploadBytes, getDownloadURL } from "../firebase";
 import { collection, query, getDocs, where, doc, setDoc, deleteDoc, getDoc, addDoc,updateDoc } from "firebase/firestore";
+import { format, parse } from 'date-fns';
 import { useEffect, useState, useRef } from "react";
 import { update } from "firebase/database";
 import { useSession, signIn } from "next-auth/react";
@@ -10,6 +11,7 @@ import { getUserSession } from '../../lib/session'
 import Sidebar from "../sidebar";
 import OpenAI from "openai";
 import { Camera } from "react-camera-pro";
+import Swal from 'sweetalert2'
 
 export default function Home() {;
   const [pantry, setPantry] = useState([]);
@@ -207,6 +209,11 @@ export default function Home() {;
   
       if (parsedExpiryDate < today) {
         alert(`The expiry date ${expiryDate} is before today's date ${formattedToday}`);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: `The expiry date ${expiryDate} is before today's date ${formattedToday}`,
+        });
         return;
       }
   
