@@ -186,6 +186,14 @@ export default function Home() {;
 
   const suggestRecipe = async (pantryItems) => {
     try {
+      if (pantryItems.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Empty Pantry',
+          text: 'Please add items to your pantry to get recipe suggestions.',
+        });
+        return;
+      }
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: {
