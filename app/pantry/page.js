@@ -508,7 +508,7 @@ export default function Home() {;
       });
 
       alert('Image uploaded successfully!');
-      console.log('Image URL:', downloadURL);
+      // console.log('Image URL:', downloadURL);
       handleCameraModalClose();
 
       const response = await fetch('/api/openai', {
@@ -532,9 +532,9 @@ export default function Home() {;
       if (expiryDate < curr) {
         alert("Expiry date cannot be a past date.");
       } else {
-        console.log('Vision API result:', result);
+        // console.log('Vision API result:', result);
         const json_data = JSON.parse( result.visionResult);
-        console.log(json_data);
+        // console.log(json_data);
         await addDoc(collection(firestore, `users/${userId}/pantry`), {
           name: json_data.name,
           quantity: 1,
