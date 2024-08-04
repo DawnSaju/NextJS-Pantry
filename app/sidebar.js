@@ -14,7 +14,7 @@ export default function Sidebar() {
 
   useEffect(() => {
    if (status === "authenticated") {
-     console.log(session.user);
+     // console.log(session.user);
      setUser(session.user);
    } else if (status === "unauthenticated") {
      signIn();
