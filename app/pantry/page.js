@@ -28,7 +28,6 @@ export default function Home() {;
   const [loading, setLoading] = useState(true);
   const [pantryItems, setPantryItems] = useState([]);
   const [currDate, setCurrDate] = useState(new Date());
-  const [message, setMessage] = useState("");
   const [response, setResponse] = useState(null);
   const camera = useRef(null);
   const [numberOfCameras, setNumberOfCameras] = useState(0);
@@ -526,22 +525,15 @@ export default function Home() {;
                 </ul>
               </div>
               <div className="flex justify-between items-center p-4 border border-gray-300 rounded-lg bg-gray-50">
-                  <div className="flex space-x-2 w-full">
-                    <input
-                      type="text"
-                      placeholder="Type your message here..."
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
-                    />
+                  <div className="flex w-full justify-center items-center">
                     <button
                       onClick={() => handleSuggestRecipe()}
-                      className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                      className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition lg:w-screen"
                     >
-                      Send
+                      Generate Recipe
                     </button>
                   </div>
-                </div>
+              </div>
           </div>
         </div>
       </main>
