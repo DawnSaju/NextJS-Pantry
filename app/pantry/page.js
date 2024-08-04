@@ -3,7 +3,7 @@
 import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
 import { firestore, storage, ref, uploadBytes, getDownloadURL } from "../firebase";
 import { collection, query, getDocs, where, doc, setDoc, deleteDoc, getDoc, addDoc,updateDoc } from "firebase/firestore";
-import { format, parse } from 'date-fns';
+import { parseISO, isBefore, format } from 'date-fns';
 import { useEffect, useState, useRef } from "react";
 import { update } from "firebase/database";
 import { useSession, signIn } from "next-auth/react";
@@ -86,20 +86,39 @@ export default function Home() {;
   const captureImage = async () => {
     const photo = camera.current.takePhoto();
     const storageRef = ref(storage, `users/${userId}/images/${Date.now()}.jpg`);
-
+  
     try {
+      handleCameraModalClose();
+      Swal.fire({
+        title: 'Uploading image...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+  
       const snapshot = await uploadBytes(storageRef, dataURLtoBlob(photo));
       const downloadURL = await getDownloadURL(snapshot.ref);
-
+  
       await addDoc(collection(firestore, `users/${userId}/images`), {
         url: downloadURL,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
-
-      alert('Image uploaded successfully!');
-      console.log('Image URL:', downloadURL);
-      handleCameraModalClose();
-
+  
+      Swal.close();
+  
+      Swal.fire('Success', 'Image uploaded successfully!', 'success');
+    
+      Swal.fire({
+        title: 'Analyzing image...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+  
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: {
@@ -107,34 +126,51 @@ export default function Home() {;
         },
         body: JSON.stringify({ isVision: true, imageUrl: downloadURL }),
       });
-
+  
       const result = await response.json();
-      const UserexpiryDate = prompt("Enter the expiry date for this item (YYYY-MM-DD):");
-      // check if the user entered expiry date is not past date
-      if (!UserexpiryDate || !/^\d{2}-\d{2}-\d{4}$/.test(UserexpiryDate)) {
-        alert("Invalid Format. DD-MM-YYYY.");
-      }
-      const [day, month, year] = UserexpiryDate.split('-').map(Number);
-      const expiryDate = new Date(year, month - 1, day);
-      const curr = new Date();
-      curr.setHours(0, 0, 0, 0);
+      Swal.close();
+  
+      const { value: UserexpiryDate } = await Swal.fire({
+        title: 'Enter the expiry date for this item (DD-MM-YYYY)',
+        input: 'text',
+        inputPlaceholder: 'DD-MM-YYYY',
+        inputValidator: (value) => {
+          if (!value || !/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+            return 'Invalid Format. DD-MM-YYYY.';
+          }
+        },
+      });
+  
+      if (UserexpiryDate) {
+        const [day, month, year] = UserexpiryDate.split('-').map(Number);
+        const expiryDate = new Date(year, month - 1, day);
+        const curr = new Date();
+        curr.setHours(0, 0, 0, 0);
+  
+        if (expiryDate < curr) {
+          Swal.fire('Error', 'Expiry date cannot be a past date.', 'error');
+        } else {
+          const json_data = JSON.parse(result.visionResult);
 
-      if (expiryDate < curr) {
-        alert("Expiry date cannot be a past date.");
-      } else {
-        console.log('Vision API result:', result);
-        const json_data = JSON.parse( result.visionResult);
-        console.log(json_data);
-        await addDoc(collection(firestore, `users/${userId}/pantry`), {
-          name: json_data.name,
-          quantity: 1,
-          expiryDate: UserexpiryDate,
-        });
-        updatePantry(); 
+          if (json_data.edible == false) {
+            Swal.fire('Error', 'Provided is not a pantry item.', 'error');
+          }
+  
+          await addDoc(collection(firestore, `users/${userId}/pantry`), {
+            name: json_data.name,
+            quantity: 1,
+            expiryDate: UserexpiryDate,
+          });
+  
+          Swal.fire('Success', 'Pantry item added successfully!', 'success');
+          updatePantry();
+        }
       }
     } catch (error) {
       console.error("Error uploading image: ", error);
       handleCameraModalClose();
+      Swal.close();
+      Swal.fire('Error', 'There was an error uploading the image.', 'error');
     }
   };
 
@@ -204,16 +240,14 @@ export default function Home() {;
         return;
       }
 
-      const parsedExpiryDate = parse(expiryDate, 'dd-MM-yyyy', new Date());
+      const parsedExpiryDate = parseISO(expiryDate);
       const today = new Date();
-      const formattedToday = format(today, 'dd-MM-yyyy');
-  
-      if (parsedExpiryDate < today) {
-        alert(`The expiry date ${expiryDate} is before today's date ${formattedToday}`);
+
+      if (isBefore(parsedExpiryDate, today)) {
         Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: `The expiry date ${expiryDate} is before today's date ${formattedToday}`,
+          icon: 'error',
+          title: 'Invalid Expiry Date',
+          text: 'Expiry date cannot be a past date.',
         });
         return;
       }
