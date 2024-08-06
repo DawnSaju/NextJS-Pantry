@@ -146,23 +146,43 @@ export default function Home() {;
         const curr = new Date();
         curr.setHours(0, 0, 0, 0);
   
+        // if (expiryDate < curr) {
+        //   Swal.fire('Error', 'Expiry date cannot be a past date.', 'error');
+        // } else {
+        //   const json_data = JSON.parse(result.visionResult);
+
+        //   if (json_data.edible == false) {
+        //     Swal.fire('Error', 'Provided is not a pantry item.', 'error');
+        //   }
+  
+        //   await addDoc(collection(firestore, `users/${userId}/pantry`), {
+        //     name: json_data.name,
+        //     quantity: 1,
+        //     expiryDate: UserexpiryDate,
+        //   });
+  
+        //   Swal.fire('Success', 'Pantry item added successfully!', 'success');
+        //   updatePantry();
+        // }
         if (expiryDate < curr) {
           Swal.fire('Error', 'Expiry date cannot be a past date.', 'error');
         } else {
           const json_data = JSON.parse(result.visionResult);
+          const edible = json_data.edible;
+          console.log('json_data:', json_data);
 
-          if (json_data.edible == false) {
+          if (edible == false) {
             Swal.fire('Error', 'Provided is not a pantry item.', 'error');
+          } else {
+            await addDoc(collection(firestore, `users/${userId}/pantry`), {
+              name: json_data.name,
+              quantity: 1,
+              expiryDate: UserexpiryDate,
+            });
+    
+            Swal.fire('Success', 'Pantry item added successfully!', 'success');
+            updatePantry();
           }
-  
-          await addDoc(collection(firestore, `users/${userId}/pantry`), {
-            name: json_data.name,
-            quantity: 1,
-            expiryDate: UserexpiryDate,
-          });
-  
-          Swal.fire('Success', 'Pantry item added successfully!', 'success');
-          updatePantry();
         }
       }
     } catch (error) {
